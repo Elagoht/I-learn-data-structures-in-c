@@ -28,20 +28,19 @@ node *createNode(int data)
   return newNode;
 }
 
-node *appendToList(node *root, node *nodeToAppend)
+void appendToList(node **root, node *nodeToAppend)
 {
-  if (root == NULL)
-    return nodeToAppend;
+  if (*root == NULL)
+    *root = nodeToAppend;
 
-  node *iterator = root;
+  node *iterator = *root;
   while (iterator->next != NULL)
     iterator = iterator->next;
 
   iterator->next = nodeToAppend;
-  return root;
 }
 
-node *insertToList(node *root, node *nodeToInsert, int place)
+void insertToList(node **root, node *nodeToInsert, int place)
 {
   if (place < 0)
   {
@@ -51,20 +50,23 @@ node *insertToList(node *root, node *nodeToInsert, int place)
 
   if (place == 0)
   {
-    nodeToInsert->next = root;
-    return nodeToInsert;
+    nodeToInsert->next = *root;
+    *root = nodeToInsert;
+    return;
   }
 
-  node *iterator = root;
+  node *iterator = *root;
   for (int index = 0; index < place - 1; ++index)
   {
     if (iterator == NULL || iterator->next == NULL)
-      return appendToList(root, nodeToInsert);
+    {
+      appendToList(root, nodeToInsert);
+      return;
+    }
     iterator = iterator->next;
   }
   nodeToInsert->next = iterator->next;
   iterator->next = nodeToInsert;
-  return root;
 }
 
 void printList(node *root)
@@ -77,27 +79,29 @@ void printList(node *root)
   }
 }
 
-void freeList(node *root)
+void freeList(node **root)
 {
-  node *iterator = root;
+  node *iterator = *root;
   while (iterator != NULL)
   {
     node *temp = iterator;
     iterator = iterator->next;
     free(temp);
   }
+  *root = NULL;
 }
 
 int main()
 {
   node *root = createNode(1);
 
-  root = insertToList(root, createNode(4), 4);
-  root = appendToList(root, createNode(3));
-  root = appendToList(root, createNode(5));
-  root = insertToList(root, createNode(2), 2);
+  insertToList(&root, createNode(4), 4);
+  appendToList(&root, createNode(3));
+  appendToList(&root, createNode(5));
+  insertToList(&root, createNode(2), 2);
 
   printList(root);
-  freeList(root);
+  freeList(&root);
+
   return 0;
 }
